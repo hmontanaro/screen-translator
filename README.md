@@ -7,8 +7,8 @@ A real-time screen translation tool that offers two convenient ways to translate
 - **Screen Area Selection**: Interactive rectangle selection for OCR translation
 - **Clipboard Translation**: Translate text you copy
 - **OCR Recognition**: Uses Tesseract OCR for German text recognition
-- **DeepL Translation**: Translations using DeepL API
-- **Overlay Display**: Translation results appear near your cursor
+- **DeepL Translation**: High-quality translations using DeepL API
+- **Interactive Overlay**: Right-click to copy translations
 - **Global Hotkeys**: Works system-wide with keyboard shortcuts
 - **Multi-monitor Support**: Works across multiple displays
 
@@ -90,12 +90,16 @@ python main.py
 4. OCR extracts German text from the selected area
 5. DeepL translates the text to English
 6. Translation appears in an overlay near the selected area
+7. **Left-click** the overlay to dismiss it
+8. **Right-click** the overlay to copy the translation to clipboard
 
 #### Clipboard Translation (Ctrl+Alt+C)
 1. Copy any German text to your clipboard (Ctrl+C)
 2. Press `Ctrl+Alt+C` to translate
 3. Translation appears in an overlay near your cursor
-4. Works with text from any application (browsers, documents, etc.)
+4. **Left-click** the overlay to dismiss it
+5. **Right-click** the overlay to copy the translation to clipboard
+6. Works with text from any application (browsers, documents, etc.)
 
 ## Configuration
 

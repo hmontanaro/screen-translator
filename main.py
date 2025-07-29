@@ -87,7 +87,7 @@ def ocr_de(image):
         if int(data["conf"][i]) > 60 and text.strip():
             line = data["line_num"][i]
             lines.setdefault(line, []).append(text)
-    extracted = "\n".join(" ".join(words) for _, words in sorted(lines.items()))
+    extracted = " ".join(" ".join(words) for _, words in sorted(lines.items()))
     return extracted.strip()
 
 
@@ -236,10 +236,11 @@ class Overlay(QtWidgets.QWidget):
             | QtCore.Qt.WindowStaysOnTopHint
         )
         self.setAttribute(QtCore.Qt.WA_TranslucentBackground, True)
-        self.setAttribute(QtCore.Qt.WA_TransparentForMouseEvents, True)
+        # Remove transparent for mouse events to allow clicking
         self.text = ""
         self.padding = 10
         self.font = QtGui.QFont("Segoe UI", 10)
+        self.setCursor(QtCore.Qt.PointingHandCursor)
         self.hide()
 
     def show_text_near(self, text, near_pos):
@@ -247,12 +248,20 @@ class Overlay(QtWidgets.QWidget):
             self.hide()
             return
         self.text = text
-        # Size to text
+
+        # Fixed width for consistent layout
+        fixed_width = 400
+
+        # Calculate height needed for wrapped text
         fm = QtGui.QFontMetrics(self.font)
-        lines = text.splitlines() or [text]
-        width = max(fm.horizontalAdvance(line) for line in lines) + self.padding * 2
-        height = (fm.height() * len(lines)) + self.padding * 2
+        text_rect = QtCore.QRect(0, 0, fixed_width - self.padding * 2, 1000)
+        bounded_rect = fm.boundingRect(text_rect, QtCore.Qt.TextWordWrap, text)
+
+        # Set overlay size
+        width = fixed_width
+        height = bounded_rect.height() + self.padding * 2 + 25  # Extra space for hints
         self.resize(width, height)
+
         # Position near cursor with slight offset
         x = near_pos[0] + 16
         y = near_pos[1] + 16
@@ -260,6 +269,33 @@ class Overlay(QtWidgets.QWidget):
         self.show()
         self.raise_()
         self.repaint()
+
+    def mousePressEvent(self, event):
+        if event.button() == QtCore.Qt.LeftButton:
+            # Left click dismisses the overlay
+            self.hide()
+        elif event.button() == QtCore.Qt.RightButton:
+            # Right click copies text to clipboard
+            self.copy_to_clipboard()
+        super().mousePressEvent(event)
+
+    def copy_to_clipboard(self):
+        """Copy the translation text to clipboard"""
+        if not self.text:
+            return
+        try:
+            win32clipboard.OpenClipboard()
+            win32clipboard.EmptyClipboard()
+            win32clipboard.SetClipboardText(self.text)
+            win32clipboard.CloseClipboard()
+            print(f"Copied to clipboard: {self.text[:50]}...")
+            # Brief visual feedback - could add a small "Copied!" indicator here
+        except Exception as e:
+            print(f"Error copying to clipboard: {e}")
+            try:
+                win32clipboard.CloseClipboard()
+            except Exception:
+                pass
 
     def paintEvent(self, _):
         if not self.text:
@@ -284,6 +320,16 @@ class Overlay(QtWidgets.QWidget):
             QtCore.Qt.TextWordWrap,
             self.text,
         )
+
+        # Add interaction hints at the bottom
+        hint_font = QtGui.QFont("Segoe UI", 8)
+        painter.setFont(hint_font)
+        painter.setPen(QtGui.QPen(QtGui.QColor(180, 180, 180)))
+        hint_text = "Left click: dismiss • Right click: copy"
+        hint_rect = QtCore.QRect(
+            self.padding, rect.height() - 20, rect.width() - self.padding * 2, 15
+        )
+        painter.drawText(hint_rect, QtCore.Qt.AlignCenter, hint_text)
 
 
 def run():
