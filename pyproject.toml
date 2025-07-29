@@ -1,0 +1,15 @@
+[project]
+name = "screen-translator"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+    "keyboard>=0.13.5",
+    "mss>=10.0.0",
+    "pillow>=11.3.0",
+    "pyside6>=6.9.1",
+    "pytesseract>=0.3.13",
+    "pywin32>=311",
+    "requests>=2.32.4",
+]
