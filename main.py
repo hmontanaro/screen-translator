@@ -19,9 +19,32 @@ DEEPL_KEY = os.getenv("DEEPL_API_KEY")  # set this in your environment
 LANG_SRC, LANG_DST = "DE", "EN"  # German -> English
 
 
-pytesseract.pytesseract.tesseract_cmd = (
-    r"C:\Users\hmont\AppData\Local\Programs\Tesseract-OCR\tesseract.exe"
-)
+# Try to find Tesseract or use environment variable
+tesseract_path = os.getenv("TESSERACT_CMD")
+if not tesseract_path:
+    # Common installation paths
+    possible_paths = [
+        r"C:\Program Files\Tesseract-OCR\tesseract.exe",
+        r"C:\Program Files (x86)\Tesseract-OCR\tesseract.exe",
+    ]
+    # Look in AppData for all users
+    app_data_path = os.path.join(
+        os.environ.get("LOCALAPPDATA", ""), "Programs", "Tesseract-OCR", "tesseract.exe"
+    )
+    if os.path.exists(app_data_path):
+        possible_paths.insert(0, app_data_path)
+
+    # Use the first path that exists
+    tesseract_path = next(
+        (path for path in possible_paths if os.path.exists(path)), None
+    )
+
+if tesseract_path:
+    pytesseract.pytesseract.tesseract_cmd = tesseract_path
+else:
+    print(
+        "Warning: Tesseract not found. Please set TESSERACT_CMD environment variable."
+    )
 
 
 def get_mouse_rect(w=600, h=220):
