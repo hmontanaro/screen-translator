@@ -1,4 +1,5 @@
 import os
+import re
 import time
 
 import keyboard
@@ -46,6 +47,18 @@ else:
     )
 
 
+def clean_text(s: str) -> str:
+    # 1) Undo hyphenation at end-of-line
+    s = re.sub(r"(\w)-\n(\w)", r"\1\2", s)
+    # 2) Join lines that aren’t paragraphs
+    #    (i.e. single '\n', not double '\n\n')
+    s = re.sub(r"(?<!\n)\n(?!\n)", " ", s)
+    # 3) Reduce multiple blank lines to exactly one
+    s = re.sub(r"\n{3,}", "\n\n", s)
+    # Trim
+    return s.strip()
+
+
 def get_clipboard_text():
     """Get text from clipboard"""
     try:
@@ -61,6 +74,7 @@ def get_clipboard_text():
             text = data.decode("utf-8") if isinstance(data, bytes) else data
 
         win32clipboard.CloseClipboard()
+        text = clean_text(text)
         return text.strip() if text else ""
     except Exception as e:
         print(f"Error getting clipboard text: {e}")
